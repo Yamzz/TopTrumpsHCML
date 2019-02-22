@@ -1,0 +1,621 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<style>
+
+    .card {
+        font-size: 1em;
+        overflow: hidden;
+        padding: 0;
+        border: none;
+        border-radius: .28571429rem;
+        box-shadow: 0 1px 3px 0 #d4d4d5, 0 0 0 1px #d4d4d5;
+    }
+
+    .card-block {
+        font-size: 1em;
+        position: relative;
+        margin: 0;
+        padding: 1em;
+        border: none;
+        border-top: 1px solid rgba(34, 36, 38, .1);
+        box-shadow: none;
+    }
+
+    .card-img-top {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
+
+    .card-title {
+        font-size: 1.28571429em;
+        font-weight: 700;
+        line-height: 1.2857em;
+    }
+
+    .card-text {
+        clear: both;
+        margin-top: .5em;
+        color: rgba(0, 0, 0, .68);
+    }
+
+    .card-footer {
+        font-size: 1em;
+        position: static;
+        top: 0;
+        left: 0;
+        max-width: 100%;
+        padding: .75em 1em;
+        color: rgba(0, 0, 0, .4);
+        border-top: 1px solid rgba(0, 0, 0, .05) !important;
+        background: #fff;
+    }
+
+    .card-inverse .btn {
+        border: 1px solid rgba(0, 0, 0, .05);
+    }
+
+    .humanheader img {
+        float: left;
+        width: 100px;
+        height: 100px;
+        background: #555;
+    }
+
+    .humanheader h1 {
+        position: relative;
+        /*top: 18px;*/
+        left: 10px;
+        margin-bottom: 10px;
+    }
+
+    .computerheader h1 {
+        position: relative;
+        left: 10px;
+        margin-bottom: 10px;
+    }
+
+    .meta {
+        padding: 5px;
+    }
+
+</style>
+
+
+<div class="row">
+
+    @Html.Partial("_Human")
+
+    @Html.Partial("_GameScreen")
+
+    @Html.Partial("_Computer")
+
+</div>
+
+<div class="modal" id="myModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title text-center"><strong>  Whose going First?</strong></h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+
+                    <div class="col-md-6">
+                        <button data-dismiss="modal"  id="btnHumanFirst" class="btn btn-success">Human</button>
+
+                    </div>
+
+                    <div class="col-md-6">
+                        <button data-dismiss="modal" id="btnComputerFirst" style="float:right" class="btn btn-danger">Computer</button>
+                    </div>
+
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <a href="#" data-dismiss="modal" class="btn btn-info">Cancel</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="winnersModal" >
+    <div class="modal-dialog bg-success" >
+        <div class="modal-content" style="background-color:green">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h1 style="color:white" class="modal-title text-center">Winner is </h1>
+                <strong class="text-center" style="color:white;font-size:x-large" id="topTrumpWinner"></strong>
+            </div>            
+            <div class="modal-footer">
+                <a href="#" data-dismiss="modal" class="btn btn-danger">Close</a>
+            </div>
+        </div>
+    </div>
+</div>  
+
+<script>
+    $(document).ready(function () {
+
+        var humanPlayer = "Human";
+        var computerPlayer = "Computer";
+        var humanCardDeck;
+        var computerCardDeck;
+        var firstPlayerToPlay;
+        var nothing = 0;
+
+        $("#btnNextRound").hide();
+        $("#btnHumanPlayerHand").hide();
+
+
+        $("#btnStartGame").kendoButton({
+            click: whosePlaying
+        });
+
+
+        $("#btnHumanFirst").kendoButton({
+            click: startGame
+        });
+
+
+        $("#btnComputerFirst").kendoButton({
+            click: startGame
+        });
+
+
+        $("#btnResetGame").kendoButton({
+            click: resetGame
+        });
+
+        $("#btnNextRound").kendoButton({
+            click: nextRound
+        });
+        
+
+
+
+        function resetGame() {
+            location.reload();
+        }
+
+
+        function whosePlaying(e) {
+            $('#myModal').modal({ show: true });
+        }
+
+
+        function startGame(e) {
+
+            $("#btnHumanPlayerHand").show();
+
+              var toggledPlayer = event.target.id; 
+              firstPlayerToPlay = toggledPlayer.includes("Human") ? "Human" : "Computer";
+
+        $.ajax({
+            type: "GET",
+            traditional: true,
+            async: false,
+            cache: false,
+            url: '@Url.Action("StartGame")',
+            context: document.body,
+            data: { firstPlayer: firstPlayerToPlay },
+            success: function (result) {
+                console.log(result);
+                beginGameLogic(firstPlayerToPlay, result); 
+            },
+            error: function (xhr) {
+                console.log(xhr.responseText);
+            }
+        });
+      }
+
+
+        function beginGameLogic(currentPlayer, deckOfCards) {
+          
+            $("#btnStartGame").hide();
+            initialiseGame(deckOfCards, currentPlayer);
+        }
+
+        function initialiseGame(deckOfCards, currentPlayer)
+        {
+            humanCardDeck = deckOfCards.splice(0, Math.floor(deckOfCards.length / 2));
+            computerCardDeck = deckOfCards;
+
+            if (currentPlayer === humanPlayer) {
+                setHumanTopCard();
+                $("#computerDeckDiv").fadeOut();
+            }
+            else {
+                computerPlayHand();
+            }
+
+            $("#btnHumanPlayerHand").kendoButton({
+                click: humanPlayHand
+            });
+
+
+            $("#btnComputerPlayerHand").kendoButton({
+                click: computerPlayHand
+            });
+
+            updateCardDeckSize();
+        }
+
+
+        var counter = 5;
+        var currentHumanAttribute; 
+        var currentComputerAttribute; 
+        var currentScore; 
+        var attributeWeAreComparing; 
+        var defaultCardValue = "???";
+        var nextTophumanCard;
+        var nextTopComputerCard; 
+
+        function humanPlayHand() {
+
+            var humanTopCard; 
+            if ((firstPlayerToPlay === humanPlayer || firstPlayerToPlay === computerPlayer) && !$("input:radio[name='humanstarships']").is(":checked") ) {
+                alert("Please select an attribute")
+                return;
+            }
+            else {
+
+                //if computer played first check human selected same attributes as computer 
+                if ((firstPlayerToPlay === computerPlayer)
+                    && ($('input[name=humanstarships]:checked', '#myHumanRadioButtons').attr('id') !== attributeWeAreComparing)) {
+                    alert("Please select correct attribute No Cheating!!")
+                    return;
+                }
+
+                //if computer played first we use the attribute set by the computer to compare 
+                attributeWeAreComparing = (firstPlayerToPlay === computerPlayer) ?
+                                          attributeWeAreComparing
+                                          :
+                                          $('input[name=humanstarships]:checked', '#myHumanRadioButtons').attr('id') 
+
+                debugger;
+                if (nextTophumanCard == null) {
+                    humanTopCard = humanCardDeck[0];
+                    $('#attributeToCompare').text(attributeWeAreComparing);
+                    currentHumanAttribute = humanTopCard[attributeWeAreComparing];
+                }
+                else {
+                    humanTopCard = nextTophumanCard;
+                    currentHumanAttribute = humanTopCard[attributeWeAreComparing];
+                }
+
+            }
+
+            $("#btnHumanPlayerHand").hide();
+           
+            //bindAttributesToHumanCard(humanTopCard);
+            if (firstPlayerToPlay === computerPlayer) {
+
+                //countdown to result 
+                var interval = setInterval(function () {
+                    counter--;
+                    $('#gameCounter').text(counter);
+                    if (counter <= 0) {
+                        clearInterval(interval);
+                        counter = 5;
+                        bindAttributesToHumanCard(humanTopCard);
+                        bindUsedAttributes(humanTopCard);
+                        whoWonTheRound();
+                        checkOverallWinner();
+                    }
+                }, 1000);
+            }
+            else {
+
+                //countdown to computer play 
+                var interval = setInterval(function () {
+                    counter--;
+                    $('#gameCounter').text(counter);
+                    if (counter <= 0) {
+                        clearInterval(interval);
+                        counter = 5;
+                        computerPlayHand();
+                    }
+                }, 1000);
+            }
+        }
+
+        function computerPlayHand() {
+
+            debugger;
+
+            var computerTopCard;
+            if (nextTopComputerCard === null || nextTopComputerCard === undefined) {
+                computerTopCard = computerCardDeck[0];
+            }
+            else {
+                computerTopCard = nextTopComputerCard;
+            }             
+           
+            if (firstPlayerToPlay === computerPlayer) {
+                //computer will select a random attibute 
+                attributeWeAreComparing = getRandomAtrribute();
+                $('#attributeToCompare').text(attributeWeAreComparing);
+                currentComputerAttribute = computerTopCard[attributeWeAreComparing];
+            }
+            else {
+                //human player played first so use thier selected attribute
+                currentComputerAttribute = computerTopCard[attributeWeAreComparing];
+            }
+
+            bindAttributesToComputerCard(computerTopCard); 
+
+            if (firstPlayerToPlay === humanPlayer) {
+                whoWonTheRound();
+                $("#computerDeckDiv").fadeIn();
+                checkOverallWinner();
+            } 
+
+         }
+
+        var getRandomAtrribute = function () {
+            var attributeKeys = ["Credits", "Crew", "Films", "Ratings", "Speed"];
+            var randAttri = attributeKeys[Math.floor(Math.random() * attributeKeys.length)];
+            return randAttri; 
+        };
+        
+        //#region game logic
+
+        function setComputerTopCard() {
+            var computerTopCard = computerCardDeck[0];
+            bindAttributesToComputerCard(computerTopCard); 
+        }
+
+        function setHumanTopCard() {
+            var humanTopCard = humanCardDeck[0];
+            bindAttributesToHumanCard(humanTopCard);
+            bindUsedAttributes(humanTopCard)
+        }
+
+        function nextRound() {
+
+            resetGameScreen(); 
+
+            if (firstPlayerToPlay === humanPlayer) {
+                resetComputerCardValues();
+                $("#computerDeckDiv").fadeOut();
+                nextTophumanCard = getNextCardItem(humanCardDeck);
+                debugger;
+                bindAttributesToHumanCard(nextTophumanCard);
+                bindUsedAttributes(nextTophumanCard); 
+            }
+            else {
+                resetComputerCardValues();
+                resetHumanCardValues(); 
+
+                //get the next card for next play 
+                nextTophumanCard = getNextCardItem(humanCardDeck);
+
+                //count down to next computer play 
+                var interval = setInterval(function () {
+                    counter--;
+                    $('#gameCounter').text(counter);
+                    if (counter <= 0) {
+                        clearInterval(interval);
+                        counter = 5;
+                        computerPlayHand();
+                    }
+                }, 1000);
+
+            }
+        }
+
+        function getNextCardItem(cardDeck) {
+            var rand = cardDeck[Math.floor(Math.random() * cardDeck.length)];
+            return rand; 
+        }
+
+        //#endregion
+
+        //#region Win Lose Draw logic
+        var currentRound = 1; 
+
+        function whoWonTheRound() {
+            //non identifiable integers will be given 0 value
+            currentHumanAttribute = (isNaN(currentHumanAttribute) ? generateRandomNumber() : currentHumanAttribute);
+            currentComputerAttribute = (isNaN(currentComputerAttribute) ? generateRandomNumber() : currentComputerAttribute);
+
+            debugger;
+
+            var gameRules = {
+                Credits: "Highest",
+                Speed : "Highest",
+                Films: "Highest",
+                Crew: "Lowest",
+                Ratings: "Lowest"
+            };
+
+            debugger;
+            var rule;
+            for (var key in gameRules) {  
+                if (key === attributeWeAreComparing)
+                {
+                    rule = gameRules[key];
+                    break;
+                }
+            }
+
+            var operation = (rule == "Highest") ? ">" : "<" ;
+  
+            debugger;
+            switch (operation) {
+                case ">":
+                    // code block
+                    highestAttributesWins(); 
+                    break;
+                case "<":
+                    // code block
+                    lowestAttributesWins();
+                    break;
+                default:
+            }
+        }
+
+        function highestAttributesWins() {
+            var highest = Math.max(parseInt(currentHumanAttribute), parseInt(currentComputerAttribute));
+            compareAttributes(highest);     
+        }
+
+        function lowestAttributesWins() {
+            var lowest = Math.min(parseInt(currentHumanAttribute), parseInt(currentComputerAttribute));
+
+            compareAttributes(lowest);
+        }
+
+        function compareAttributes(checkingValue) {
+            debugger; 
+            //check for draw 
+            if ((checkingValue === parseInt(currentHumanAttribute)) && (checkingValue === parseInt(currentComputerAttribute)))
+            {
+                $('#roundWinner').text("Draw");
+                $("#btnNextRound").hide();
+                if (firstPlayerToPlay === computerPlayer) {
+                    $("#btnHumanPlayerHand").show();
+                    resetHumanCardValues()
+                    //choose another random card for them 
+                    nextTophumanCard = getNextCardItem(humanCardDeck);
+                    $('#humanmodel').text(defaultCardValue);
+                    $('#humanmanufacturer').text(defaultCardValue);
+                    $('#humanpilot').text(defaultCardValue);
+                    alert("This was a Draw another card has been reshuffled for you");
+                }
+                else {
+                    resetComputerCardValues();
+                    nextTopComputerCard = getNextCardItem(computerCardDeck);
+
+                    alert("This was a Draw another card has been reshuffled for computer");
+                    computerPlayHand();
+                    $("#btnHumanPlayerHand").show();
+                }
+                return;
+
+            }
+
+
+            //human wins round
+            if (checkingValue === parseInt(currentHumanAttribute)) {
+                $('#roundWinner').text(humanPlayer + " Wins Round " + currentRound);
+                var topComputerCard = computerCardDeck[0];
+                humanCardDeck.push(topComputerCard);
+                computerCardDeck.shift();
+
+                updateCardDeckSize();
+                $("#btnNextRound").show();
+                currentRound += 1;
+                return;
+            }
+
+            //computer wins round
+            if (checkingValue === parseInt(currentComputerAttribute)) {
+                $('#roundWinner').text(computerPlayer + " Wins Round " + currentRound);
+
+                var topHumanCard = humanCardDeck[0];
+                computerCardDeck.push(topHumanCard);
+                humanCardDeck.shift();
+
+                updateCardDeckSize();
+                $("#btnNextRound").show();
+                currentRound += 1;
+                return;
+            }
+
+
+        }
+
+        function generateRandomNumber() {
+            var maximum = 10000;
+            //var minimum = 1; 
+            var randomNo = Math.floor(Math.random() * maximum);
+            return randomNo.toString()
+        }
+
+        function checkOverallWinner() {
+            if (humanCardDeck.length === nothing)
+            {
+                $('#topTrumpWinner').text(computerPlayer);
+                $('#winnersModal').modal({ show: true });
+            }
+
+            if (computerCardDeck.length === nothing)
+            {
+                $('#topTrumpWinner').text(humanPlayer);
+                $('#winnersModal').modal({ show: true });
+            }
+        }
+
+        //#endregion
+     
+        //#region UI Updates
+        function resetComputerCardValues() {
+            $('#computerCostInCredits').text(defaultCardValue);
+            $('#computerHyperDriveRatings').text(defaultCardValue);
+            $('#computerTopSpeed').text(defaultCardValue);
+            $('#computerNumberOfFilms').text(defaultCardValue);
+            $('#computerCrewRequired').text(defaultCardValue);
+        }
+
+        function resetHumanCardValues() {
+            $('#humanCostInCredits').text(defaultCardValue);
+            $('#humanHyperDriveRatings').text(defaultCardValue);
+            $('#humanTopSpeed').text(defaultCardValue);
+            $('#humanNumberOfFilms').text(defaultCardValue);
+            $('#humanCrewRequired').text(defaultCardValue);
+        }
+
+        function bindAttributesToHumanCard(humanTopCard) {
+
+            $('#humanCostInCredits').text(humanTopCard.Credits);
+            $('#humanHyperDriveRatings').text(humanTopCard.Ratings);
+            $('#humanTopSpeed').text(humanTopCard.Speed);
+            $('#humanNumberOfFilms').text(humanTopCard.Films);
+            $('#humanCrewRequired').text(humanTopCard.Crew);
+        }
+
+        function bindAttributesToComputerCard(computerTopCard) {
+            $('#computerCostInCredits').text(computerTopCard.Credits);
+            $('#computerHyperDriveRatings').text(computerTopCard.Ratings);
+            $('#computerTopSpeed').text(computerTopCard.Speed);
+            $('#computerNumberOfFilms').text(computerTopCard.Films);
+            $('#computerCrewRequired').text(computerTopCard.Crew);
+        } 
+
+        function updateCardDeckSize() {
+            $('#humanCardDeckSize').text(humanCardDeck.length);
+            $('#computerCardDeckSize').text(computerCardDeck.length);
+        }
+
+        function resetGameScreen() {
+            $('#gameCounter').text(counter);        
+            $('#attributeToCompare').text("Attribute");
+            $('#roundWinner').text("Round Winner Is?");
+            $("#btnHumanPlayerHand").show();
+            $('input[name="humanstarships"]').attr('checked', false);
+            $("#btnNextRound").hide();
+
+            $('#humanmodel').text(defaultCardValue);
+            $('#humanmanufacturer').text(defaultCardValue);
+            $('#humanpilot').text(defaultCardValue);
+        }
+
+        function bindUsedAttributes(tophumanCard) {
+            $('#humanmodel').text(tophumanCard.Model);
+            $('#humanmanufacturer').text(tophumanCard.Manufacturer);
+            $('#humanpilot').text(tophumanCard.Pilot);
+        }
+
+        //#endregion
+
+
+    });
+
+
+</script>

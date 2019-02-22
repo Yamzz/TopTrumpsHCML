@@ -1,0 +1,51 @@
+﻿
+@{
+    ViewBag.Title = "_GameScreen";
+}
+
+
+
+<div class="col-md-6" style="border:solid 1px">
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="bg-warning" style="padding:10px">
+                <h1 style="font-weight:bolder; color:green" class="text-center" id="roundWinner">Round Winner Is?</h1>
+            </div>
+            <div style="padding:30px">
+                <h1 style="color:red" id="gameCounter" class="text-center">Counter</h1>
+            </div>
+            <div class="text-center bg-danger">
+                <h3 style="display:inline-block">The chosen attribute is....</h3>
+                <strong style="font-size:x-large" id="attributeToCompare">Attribute</strong>
+            </div>
+        </div>
+    </div>
+    <hr />
+        <div>
+            <h4><strong>Game Controls </strong></h4>
+            <p>
+                <button id="btnStartGame" class="btn btn-primary">Start Game</button>
+                <button id="btnResetGame" class="btn btn-warning">Reset Game</button>
+                <button id="btnNextRound" class="btn btn-default">Next Round</button>
+            </p>
+        </div>
+    <hr />
+        <div>
+            <h2>Game Rules</h2>
+            <ul>
+                <li>Cost in Credits (Highest Wins)</li>
+                <li>Hyperdrive Rating (Lowest Wins)</li>
+                <li>Top Speed in Megalights (“MGLT” attribute) – (Highest Wins)</li>
+                <li>Number of films (count of “films” - Highest Wins)</li>
+                <li>Crew Required (“crew” Lowest Wins)</li>
+                <li>
+                    <h4>NOTE* All unknown and n/a attributes will be automatically given a random value</h4>
+                    <h4 class="text-center"><strong>This could make or break you!!!</strong> </h4>
+                </li>
+
+            </ul>
+        </div>
+
+
+</div>

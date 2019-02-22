@@ -1,0 +1,71 @@
+﻿@{
+    ViewBag.Title = "_Human";
+}
+
+<div class="col-md-3" style="border:solid 1px">
+
+    <div class="humanheader">
+        <h1 class="text-center">Human Jedi</h1>
+    </div>
+
+    <div class="col-md-12">
+        
+        <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12 mt-4">
+                <div class="card">
+                    <img class="card-img-top" src="~/Content/images/luke-skywalker-lightsaber-fire-star-wars.jpg">
+                    <div class="card-block" id="myHumanRadioButtons">
+                        <div>
+                            <h5 style="display:inline-block" class="text-center">Model : </h5>
+                            <strong id="humanmodel"> ???</strong>
+                        </div>
+
+                        <div>
+                            <h5 style="display:inline-block" class="text-center">Manufacturer : </h5>
+                            <strong id="humanmanufacturer" style="display:inline-block"> ???</strong>
+                        </div>
+
+                        <div>
+                            <h5 style="display:inline-block" class="text-center">Number of Pilots : </h5>
+                            <strong id="humanpilot" style="display:inline-block"> ???</strong>
+                        </div>
+
+
+
+                        <div class="meta bg-success">
+                            <input type="radio" name="humanstarships" id="Credits" class="k-radio">
+                            <label class="k-radio-label" for="Credits">Cost in Credits : <strong id="humanCostInCredits"> ??? </strong> </label>
+                        </div>
+
+                        <div class="meta bg-primary">
+                            <input type="radio" name="humanstarships" id="Ratings" class="k-radio">
+                            <label class="k-radio-label" for="Ratings">Hyperdrive Rating : <strong id="humanHyperDriveRatings"> ??? </strong> </label>
+                        </div>
+
+                        <div class="meta bg-danger">
+                            <input type="radio" name="humanstarships" id="Speed" class="k-radio">
+                            <label class="k-radio-label" for="Speed">Top Speed : <strong id="humanTopSpeed"> ??? </strong> </label>
+                        </div>
+
+                        <div class="meta bg-info">
+                            <input type="radio" name="humanstarships" id="Films" class="k-radio">
+                            <label class="k-radio-label" for="Films">Number of Films : <strong id="humanNumberOfFilms"> ??? </strong> </label>
+                        </div>
+
+                        <div class="meta bg-warning">
+                            <input type="radio" name="humanstarships" id="Crew" class="k-radio">
+                            <label class="k-radio-label" for="Crew">Crew Required : <strong id="humanCrewRequired"> ??? </strong> </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <h3 class="text-center" style="display: inline-block;">Human Card Deck : </h3> 
+        <strong style="font-size:x-large" id="humanCardDeckSize">0</strong>
+        <button id="btnHumanPlayerHand" class="btn btn-success center-block">Play Hand</button>
+        <br />
+    </div>
+
+</div>
+
+
